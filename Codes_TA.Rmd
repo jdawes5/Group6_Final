@@ -40,7 +40,7 @@ options(scientific=T, digits = 3, scipen = 999)
 # Loading and cleaning data
 
 ```{r}
-dataset <- read.csv("US_Accidents_Dec20_updated.csv")
+dataset <- read.csv("~/Downloads/US_Accidents_Dec20_updated.csv")
 dataset <- na.omit(dataset) #335,552 observations remaining
 ```
 
@@ -73,5 +73,6 @@ table(dataset$Severity) #vast majority are severity 2, why?
 table(dataset$State) #states w/large pop have most accidents, no surprises there
 ggplot(data = dataset, aes(x = Severity, y = Distance.mi.)) + geom_boxplot() #looks wacky with most distances = 0
 ggplot(data = dataset, aes(x = Distance.mi.)) + geom_histogram(binwidth = .05) + scale_x_continuous(limits = c(0, 10)) #may need to omit distances of 0
+ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Severity)) + geom_point() + scale_y_continuous(limits = c(0, 50))
 ```
 
