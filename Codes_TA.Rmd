@@ -1,0 +1,77 @@
+---
+title: 'Group 6 Final Project: Codes and Technical Analysis'
+author: "Junran Cao, Jordan Dawes, and Carter Rogers"
+date: "`r Sys.Date()`"
+output: html_document:
+    code_folding: hide
+    number_sections: true
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r init, include=F}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(gridExtra)
+library(tidyverse)  
+library(corrplot)
+library(ezids)
+library(httr)
+```
+
+```{r setup, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+# knitr::opts_chunk$set(include = F)
+# knitr::opts_chunk$set(echo = TRUE)
+options(scientific=T, digits = 3, scipen = 999) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+# Loading and cleaning data
+
+```{r}
+dataset <- read.csv("US_Accidents_Dec20_updated.csv")
+dataset <- na.omit(dataset) #335,552 observations remaining
+```
+
+```{r}
+#encoding correct datatypes
+dataset$ID <- as.character(dataset$ID)
+dataset$Severity <- as.factor(dataset$Severity)
+dataset$Start_Time <- as.character(dataset$Start_Time)
+dataset$End_Time <- as.character(dataset$End_Time)
+dataset$Description <- as.character(dataset$Description)
+dataset$Street <- as.character(dataset$Street)
+dataset$City <- as.character(dataset$City)
+dataset$County <- as.character(dataset$County)
+dataset$State <- as.character(dataset$State)
+dataset$Zipcode <- as.numeric(dataset$Zipcode)
+dataset$Airport_Code <- as.character(dataset$Airport_Code)
+dataset$Weather_Timestamp <- as.character(dataset$Weather_Timestamp)
+dataset$Weather_Condition <- as.character(dataset$Weather_Condition)
+```
+
+```{r}
+#remove unnecessary columns
+dataset <- subset(dataset, select = -c(Number, Street, Side, Airport_Code, Weather_Timestamp, Start_Lat, Start_Lng, End_Lat, End_Lng))
+```
+
+# EDA
+
+```{r}
+table(dataset$Severity) #vast majority are severity 2, why?
+table(dataset$State) #states w/large pop have most accidents, no surprises there
+ggplot(data = dataset, aes(x = Severity, y = Distance.mi.)) + geom_boxplot() #looks wacky with most distances = 0
+ggplot(data = dataset, aes(x = Distance.mi.)) + geom_histogram(binwidth = .05) + scale_x_continuous(limits = c(0, 10)) #may need to omit distances of 0
+```
+
