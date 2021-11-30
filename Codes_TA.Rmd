@@ -76,3 +76,40 @@ ggplot(data = dataset, aes(x = Distance.mi.)) + geom_histogram(binwidth = .05) +
 ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Severity)) + geom_point() + scale_y_continuous(limits = c(0, 50))
 ```
 
+
+```{r}
+
+loadPkg("dplyr")
+#Renaming relevant columns 
+dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
+#visibility in miles
+dataset$civ.light <- as.factor(dataset$civ.light)
+str(dataset)
+
+nas <- subset(dataset, is.na(dataset$civ.light))
+nas
+
+qqnorm(dataset$vis)
+qqline(dataset$vis)
+
+loadPkg("ggplot2")
+ggplot(dataset, aes(x=civ.light)) +
+  geom_bar(col="yellow",fill="purple") + labs(title = "Bar Plot")
+
+#ggplot(dataset, aes(x=vis)) +
+#  geom_bar(col="yellow",fill="purple") + labs(title = "Visibility Bar Plot")
+
+ggplot(dataset, aes(x=vis, y=civ.light)) +
+  geom_point(size=2, shape=23)
+
+
+ggplot(dataset, aes(y=vis, x=civ.light, fill=factor(civ.light))) +
+  geom_bar(stat='identity') +
+  labs(title="Total Accidents based on Daylight",
+       x="Daylight Status",
+       y="Number of Accidents",
+       fill="Daylight Status")
+
+ggplot(data = dataset, aes(vis)) + geom_histogram()
+```
+
