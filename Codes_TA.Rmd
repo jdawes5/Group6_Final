@@ -22,6 +22,7 @@ library(tidyverse)
 library(corrplot)
 library(ezids)
 library(httr)
+library(caret)
 ```
 
 ```{r setup, include=FALSE}
@@ -74,5 +75,35 @@ table(dataset$State) #states w/large pop have most accidents, no surprises there
 ggplot(data = dataset, aes(x = Severity, y = Distance.mi.)) + geom_boxplot() #looks wacky with most distances = 0
 ggplot(data = dataset, aes(x = Distance.mi.)) + geom_histogram(binwidth = .05) + scale_x_continuous(limits = c(0, 10)) #may need to omit distances of 0
 ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Severity)) + geom_point() + scale_y_continuous(limits = c(0, 50))
+```
+
+# Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
+
+```{r}
+#KNN modeling 
+loadPkg("FNN")
+loadPkg("gmodels")
+#select only relevant cols
+newdata <- subset(dataset, select = c(Severity, Temperature.F., Wind_Speed.mph.))
+
+#scale vars
+scaleddata <- as.data.frame(scale(newdata[2:3], center = TRUE, scale = TRUE))
+scaleddata <- cbind(newdata[,1], scaleddata)
+names(scaleddata)[1] <- 'Severity'
+
+#dealing with class imbalance by generating stratified random split of data
+set.seed(123)
+trainIndex <- createDataPartition(scaleddata$Severity, p = .7, list = FALSE, times = 1)
+carter_train <- scaleddata[trainIndex,]
+carter_test <- scaleddata[-trainIndex,]
+
+knn_pred <- knn(train = carter_train[,2:3], test = carter_test[,2:3], cl=carter_train$Severity, k=7)
+cross_table <- CrossTable(carter_test$Severity, knn_pred, prop.chisq = FALSE) #analyze these results later
+```
+
+#What factors best predict the severity of an accident?
+
+```{r}
+#use RF model GINI index and VarImp plots here
 ```
 
