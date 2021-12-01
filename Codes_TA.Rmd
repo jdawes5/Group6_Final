@@ -87,12 +87,12 @@ dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibili
 dataset$civ.light <- as.factor(dataset$civ.light)
 str(dataset)
 
-nas <- subset(dataset, is.na(dataset$civ.light))
-nas
+#nas <- subset(dataset, is.na(dataset$civ.light))
+#nas
 
 dataset2 <- subset(dataset, civ.light != "")
 visdata <- subset(dataset2, vis < 11)
-visdata
+#visdata
 
 qqnorm(visdata$vis)
 qqline(visdata$vis)
@@ -128,5 +128,6 @@ ggplot(data = visdata, mapping = aes(x = Severity, y = vis)) +
 
 #use one way anova to test severity and visibility
 #chi squared test for severity and civ.light
+#tree model, KNN 
 ```
 
