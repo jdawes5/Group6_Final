@@ -80,6 +80,7 @@ ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Sev
 ```{r}
 
 loadPkg("dplyr")
+
 #Renaming relevant columns 
 dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
 #visibility in miles
@@ -89,27 +90,43 @@ str(dataset)
 nas <- subset(dataset, is.na(dataset$civ.light))
 nas
 
-qqnorm(dataset$vis)
-qqline(dataset$vis)
+dataset2 <- subset(dataset, civ.light != "")
+visdata <- subset(dataset2, vis < 11)
+visdata
+
+qqnorm(visdata$vis)
+qqline(visdata$vis)
 
 loadPkg("ggplot2")
-ggplot(dataset, aes(x=civ.light)) +
+ggplot(visdata, aes(x=civ.light)) +
   geom_bar(col="yellow",fill="purple") + labs(title = "Bar Plot")
 
 #ggplot(dataset, aes(x=vis)) +
 #  geom_bar(col="yellow",fill="purple") + labs(title = "Visibility Bar Plot")
 
-ggplot(dataset, aes(x=vis, y=civ.light)) +
+ggplot(visdata, aes(x=vis, y=civ.light)) +
   geom_point(size=2, shape=23)
 
 
-ggplot(dataset, aes(y=vis, x=civ.light, fill=factor(civ.light))) +
+ggplot(visdata, aes(y=vis, x=civ.light, fill= civ.light)) +
   geom_bar(stat='identity') +
   labs(title="Total Accidents based on Daylight",
        x="Daylight Status",
        y="Number of Accidents",
        fill="Daylight Status")
 
-ggplot(data = dataset, aes(vis)) + geom_histogram()
+ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwidth = 1)
+
+#ggplot(data = visdata, aes(civ.light)) + geom_bar()
+ggplot(data = visdata, mapping = aes(x = vis, colour = Severity)) +
+  geom_freqpoly(binwidth = 0.1)
+
+ggplot(data = visdata, mapping = aes(x = Severity, y = vis)) + 
+  geom_boxplot(mapping = aes(Severity))
+
+#plot_num(visdata)
+
+#use one way anova to test severity and visibility
+#chi squared test for severity and civ.light
 ```
 
