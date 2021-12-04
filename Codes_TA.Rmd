@@ -150,3 +150,73 @@ rf_model <- randomForest(Severity ~ .
 varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
 #wind direction, humidity, temperature appear in both plots
 ```
+<<<<<<< Updated upstream
+=======
+
+# Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
+
+```{r}
+#try decision trees and random forests instead
+
+set.seed(123)
+
+newdata2 <- subset(dataset, select = c(Severity, Temperature.F., Wind_Speed.mph., Wind_Chill.F., Humidity..., Pressure.in., vis, Precipitation.in.))
+
+#scale vars
+scaleddata2 <- as.data.frame(scale(newdata2[2:8], center = TRUE, scale = TRUE))
+scaleddata2 <- cbind(newdata2[,1], scaleddata2)
+names(scaleddata2)[1] <- 'Severity'
+
+trainIndex2 <- createDataPartition(scaleddata2$Severity, p = .7, list = FALSE, times = 1)
+carter_train2 <- scaleddata2[trainIndex2,]
+carter_test2 <- scaleddata2[-trainIndex2,]
+
+rf_model2 <- randomForest(Severity ~ .
+                    , data = carter_train2
+                    , mtry = 3
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob")
+
+predicted_table <- predict(rf_model2, carter_test2[,-1])
+table(observed = carter_test2[,1], predicted = predicted_table)
+print(rf_model2)
+round(importance(rf_model2), 2)
+
+#stratified sampling
+rf_model3 <- randomForest(Severity ~ .
+                    , data = carter_train2
+                    , mtry = 3
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob"
+                    , sampsize = c(1000, 1000, 1000, 1000))
+
+predicted_table2 <- predict(rf_model3, carter_test2[,-1])
+table(observed = carter_test2[,1], predicted = predicted_table2)
+print(rf_model3)
+round(importance(rf_model3), 2)
+```
+
+#What factors best predict the severity of an accident?
+
+```{r}
+#remove all cols except numeric, factor, and binary. Also excluding Distance since this is not a "predictive" metric but rather a rough measurement of severity
+rf_data = subset(dataset, select = -c(ID, Start_Time, End_Time, Distance.mi., Description, City, County, State, Zipcode, Country, Weather_Condition))
+
+#split train-test
+rf_trainIndex <- createDataPartition(rf_data$Severity, p = .7, list = FALSE, times = 1)
+rf_carter_train <- rf_data[rf_trainIndex,]
+rf_carter_test <- rf_data[-rf_trainIndex,]
+
+rf_model <- randomForest(Severity ~ .
+                    , data = rf_carter_train
+                    , mtry = 5
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob")
+
+varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
+#wind direction, humidity, temperature appear in both plots
+```
+>>>>>>> Stashed changes
