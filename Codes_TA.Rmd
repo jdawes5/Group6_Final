@@ -22,14 +22,9 @@ library(tidyverse)
 library(corrplot)
 library(ezids)
 library(httr)
-library(caret)
 library(randomForest)
 library(tree)
-library(ROCR)
-library(class)
-library(smotefamily)
-library(rpart)
-library(gmodels)
+library(caret)
 ```
 
 ```{r setup, include=FALSE}
@@ -84,74 +79,60 @@ ggplot(data = dataset, aes(x = Distance.mi.)) + geom_histogram(binwidth = .05) +
 ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Severity)) + geom_point() + scale_y_continuous(limits = c(0, 50))
 ```
 
-# Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
 
 ```{r}
-#try decision trees and random forests instead
 
-set.seed(123)
+loadPkg("dplyr")
 
-newdata2 <- subset(dataset, select = c(Severity, Temperature.F., Wind_Speed.mph., Wind_Chill.F., Humidity..., Pressure.in., Visibility.mi., Precipitation.in.))
+#Renaming relevant columns 
+dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
+#visibility in miles
+dataset$civ.light <- as.factor(dataset$civ.light)
+str(dataset)
 
-#scale vars
-scaleddata2 <- as.data.frame(scale(newdata2[2:8], center = TRUE, scale = TRUE))
-scaleddata2 <- cbind(newdata2[,1], scaleddata2)
-names(scaleddata2)[1] <- 'Severity'
+#nas <- subset(dataset, is.na(dataset$civ.light))
+#nas
 
-trainIndex2 <- createDataPartition(scaleddata2$Severity, p = .7, list = FALSE, times = 1)
-carter_train2 <- scaleddata2[trainIndex2,]
-carter_test2 <- scaleddata2[-trainIndex2,]
+dataset2 <- subset(dataset, civ.light != "")
+visdata <- subset(dataset2, vis < 11)
+#visdata
 
-rf_model2 <- randomForest(Severity ~ .
-                    , data = carter_train2
-                    , mtry = 3
-                    , ntree = 20
-                    , importance = TRUE
-                    , type = "prob")
+qqnorm(visdata$vis)
+qqline(visdata$vis)
 
-predicted_table <- predict(rf_model2, carter_test2[,-1])
-table(observed = carter_test2[,1], predicted = predicted_table)
-print(rf_model2)
-round(importance(rf_model2), 2)
+loadPkg("ggplot2")
+ggplot(visdata, aes(x=civ.light)) +
+  geom_bar(col="yellow",fill="purple") + labs(title = "Bar Plot")
 
-#stratified sampling
-rf_model3 <- randomForest(Severity ~ .
-                    , data = carter_train2
-                    , mtry = 3
-                    , ntree = 20
-                    , importance = TRUE
-                    , type = "prob"
-                    , sampsize = c(1000, 1000, 1000, 1000))
+#ggplot(dataset, aes(x=vis)) +
+#  geom_bar(col="yellow",fill="purple") + labs(title = "Visibility Bar Plot")
 
-predicted_table2 <- predict(rf_model3, carter_test2[,-1])
-table(observed = carter_test2[,1], predicted = predicted_table2)
-print(rf_model3)
-round(importance(rf_model3), 2)
+ggplot(visdata, aes(x=vis, y=civ.light)) +
+  geom_point(size=2, shape=23)
+
+
+ggplot(visdata, aes(y=vis, x=civ.light, fill= civ.light)) +
+  geom_bar(stat='identity') +
+  labs(title="Total Accidents based on Daylight",
+       x="Daylight Status",
+       y="Number of Accidents",
+       fill="Daylight Status")
+
+ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwidth = 1)
+
+#ggplot(data = visdata, aes(civ.light)) + geom_bar()
+ggplot(data = visdata, mapping = aes(x = vis, colour = Severity)) +
+  geom_freqpoly(binwidth = 0.1)
+
+ggplot(data = visdata, mapping = aes(x = Severity, y = vis)) + 
+  geom_boxplot(mapping = aes(Severity))
+
+#plot_num(visdata)
+
+#use one way anova to test severity and visibility
+#chi squared test for severity and civ.light
+#tree model, KNN 
 ```
-
-#What factors best predict the severity of an accident?
-
-```{r}
-#remove all cols except numeric, factor, and binary. Also excluding Distance since this is not a "predictive" metric but rather a rough measurement of severity
-rf_data = subset(dataset, select = -c(ID, Start_Time, End_Time, Distance.mi., Description, City, County, State, Zipcode, Country, Weather_Condition))
-
-#split train-test
-rf_trainIndex <- createDataPartition(rf_data$Severity, p = .7, list = FALSE, times = 1)
-rf_carter_train <- rf_data[rf_trainIndex,]
-rf_carter_test <- rf_data[-rf_trainIndex,]
-
-rf_model <- randomForest(Severity ~ .
-                    , data = rf_carter_train
-                    , mtry = 5
-                    , ntree = 20
-                    , importance = TRUE
-                    , type = "prob")
-
-varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
-#wind direction, humidity, temperature appear in both plots
-```
-<<<<<<< Updated upstream
-=======
 
 # Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
 
@@ -219,4 +200,3 @@ rf_model <- randomForest(Severity ~ .
 varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
 #wind direction, humidity, temperature appear in both plots
 ```
->>>>>>> Stashed changes
