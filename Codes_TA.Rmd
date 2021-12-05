@@ -26,6 +26,7 @@ library(httr)
 library(randomForest)
 library(tree)
 library(caret)
+library(broom)
 ```
 
 ```{r setup, include=FALSE}
@@ -116,6 +117,8 @@ ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwid
 
 ```
 
+
+
 ```{r}
 #use one way anova to test severity and visibility
 #chi squared test for severity and civ.light
@@ -140,47 +143,31 @@ The chi-square test reveals a p-value of `r testchi$p.value`
 Is this enough to predict the severity of an accident? Most likely not but we can explore it anyways.
 
 ```{r results='markup'}
-vislogit <- glm(Severity ~ vis+civ.light, data = visdata, family = "binomial")
+loadPkg("MASS")
+
+vislogit <- polr(Severity ~ vis+civ.light, data = visdata, Hess = "TRUE")
+vislogit
 summary(vislogit)
 
-odds <- exp(coef(vislogit))
-xkabledply(as.table(odds), title = "Exponential of coefficients")
+vistable <- coef(summary(vislogit))
 
-xkabledply(vislogit, title = paste("Logistic Regression :", format(formula(vislogit)) ))
+coefs = exp(coef(vislogit))
+xkabledply( as.table(coefs), title = "Exponentials of Coefficients for Model" )
 
-
-
-loadPkg("ResourceSelection")
-vishoslem <- hoslem.test(visdata$Severity, fitted(vislogit))
-vishoslem
-vishoslem$p.value
-
-loadPkg("pROC") 
-prob=predict(vislogit, type = "response" )
-visdata$prob=prob
-visroc <- roc(Severity~prob, data=visdata)
-auc(visroc) 
-plot(visroc)
-unloadPkg("pROC")
+vispredict = predict(vislogit, visdata)
+table(visdata$Severity, vispredict)
 
 
 loadPkg("pscl")
 visaic <- AIC(vislogit)
 visaic
-vispr2 <- pR2(vislogit)
-vispr2
+vispr <- pR2(vislogit)
+vispr
+
 
 unloadPkg("pscl")
-unloadPkg("ResourceSelection")
-
-loadPkg("MASS")
-
-vislogit2 <- polr(Severity ~ vis+civ.light, data = visdata,Hess = "TRUE")
-vislogit2
-summary(vislogit2)
-#pval <- tidy(vislogit2, p.values=TRUE)
-#pval
 unloadPkg("MASS")
+
 ```
 
 
@@ -293,21 +280,21 @@ xkabledply( confint.default(dfLogit), title = "CIs using standard errors" )
 expcoeff = exp(coef(dfLogit))
 xkabledply( as.table(expcoeff), title = "Exponential of coefficients in Logit Reg" )
 ```
-"Traffic_calming", "Stop", "Give-way",and "Railway" were not significant (P-value greater than 0.05)
+All the coefficient were significant (small p-values)
 
-If the 95% CI does not cross 0, the parameter estimate can be statistically significant.Therefore, "Bump", "Round_about", "Traffic_Signal", "Station", and "Traffic_Calming" were not statistically significant.
+If the 95% CI does not cross 0, the parameter estimate can be statistically significant.Therefore, "Bump", "Crossing","No-Exit","Stop",'Traffic_Signal", "Roundabout", and "Station" were not statistically significant.
 
 Interpretation:
 
-When there was an amenity, the odds of the accident being more severe (i.e.,very severe, kind of severe and very severe versus not severe) was 1.084 times that of the accidents which had no amenity, holding constant all other variables.
+When there was an amenity, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.2886 times that of the accidents which had no amenity, holding constant all other variables.
 
-When there was a crossing, the odds of the accident being more severe (i.e.,very severe, kind of severe and very severe versus not severe) was 1.224 times that of the accidents which had no crossing, holding constant all other variables.
+When there was a give-way, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.6544 times that of the accidents which had no give-way, holding constant all other variables.
 
-When there was a junction, the odds of the accident being more severe (i.e.,very severe, kind of severe and very severe versus not severe) was 2.767 times that of the accidents which had no junction, holding constant all other variables.
+When there was a junction, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 2.0765 times that of the accidents which had no junction, holding constant all other variables.
 
+When there was railway, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.7134 times that of the accidents which had no railway, holding constant all other variables.
 
-When there was traffic-signal, the odds of the accident being more severe (i.e.,very severe, kind of severe and very severe versus not severe) was 2.061 times that of the accidents which had no traffic-signal, holding constant all other variables.
-
+When there was traffic-calming, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 2.3826 times that of the accidents which had no traffic-traffic-calming, holding constant all other variables.
 
 Model Evaluation
 
