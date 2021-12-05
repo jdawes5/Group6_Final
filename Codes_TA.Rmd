@@ -80,59 +80,101 @@ ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Sev
 ```
 
 
+
+
+# Is there a relationship between Civil Twilight and Accident Occurences? Is there any relationship between visibility and the seeverity of an accident?
+
 ```{r}
 
 loadPkg("dplyr")
+loadPkg("ggplot2")
 
-#Renaming relevant columns 
+#Renaming relevant columns
 dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
-#visibility in miles
-dataset$civ.light <- as.factor(dataset$civ.light)
-str(dataset)
 
-#nas <- subset(dataset, is.na(dataset$civ.light))
-#nas
+#Subsetting out blank values for the variable civ.light
+visdata <- subset(dataset, civ.light != "")
 
-dataset2 <- subset(dataset, civ.light != "")
-visdata <- subset(dataset2, vis < 11)
-#visdata
+#Converting civ.light to a factor variable
+visdata$civ.light <- as.factor(visdata$civ.light)
 
+#qq plot to see if visibilit is normally distributed
 qqnorm(visdata$vis)
 qqline(visdata$vis)
 
-loadPkg("ggplot2")
-ggplot(visdata, aes(x=civ.light)) +
-  geom_bar(col="yellow",fill="purple") + labs(title = "Bar Plot")
-
-#ggplot(dataset, aes(x=vis)) +
-#  geom_bar(col="yellow",fill="purple") + labs(title = "Visibility Bar Plot")
-
-ggplot(visdata, aes(x=vis, y=civ.light)) +
-  geom_point(size=2, shape=23)
-
-
-ggplot(visdata, aes(y=vis, x=civ.light, fill= civ.light)) +
+#Bar plot to show day time vs night time accidents as well as the severity levels that make up each
+ggplot(visdata, aes(y=vis, x=civ.light, fill= Severity)) +
   geom_bar(stat='identity') +
-  labs(title="Total Accidents based on Daylight",
+  labs(title="Total Accidents Based on Daylight",
        x="Daylight Status",
        y="Number of Accidents",
        fill="Daylight Status")
 
-ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwidth = 1)
+#Histogram to show 
+ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwidth = 1)+labs(title = "Histogram for Accident Count Based on Visibility", x = "Vsibility (miles)", y = "Count")
 
-#ggplot(data = visdata, aes(civ.light)) + geom_bar()
-ggplot(data = visdata, mapping = aes(x = vis, colour = Severity)) +
-  geom_freqpoly(binwidth = 0.1)
+```
 
-ggplot(data = visdata, mapping = aes(x = Severity, y = vis)) + 
-  geom_boxplot(mapping = aes(Severity))
-
-#plot_num(visdata)
-
+```{r}
 #use one way anova to test severity and visibility
 #chi squared test for severity and civ.light
-#tree model, KNN 
+
+#ANOVA used to explore relationship between severity and visibility
+anovatest <- aov(vis ~ Severity, data = visdata)
+anovatest
+xkabledply(anovatest)
+anovasummary<- summary(anovatest)
+
+
+#Chi-square to explore Severity based on Civil Twilight
+chitable <- table(visdata$Severity, visdata$civ.light)
+testchi <- chisq.test(chitable)
+testchi
+testchi$p.value
 ```
+Anova test on visibility and severity results in a p-value of `r anovasummary[[1]][["Pr(>F)"]][[1]]`
+
+The chi-square test reveals a p-value of `r testchi$p.value`
+
+Is this enough to predict the severity of an accident? Most likely not but we can explore it anyways.
+
+```{r results='markup'}
+vislogit <- glm(Severity ~ vis+civ.light, data = visdata, family = "binomial")
+summary(vislogit)
+
+odds <- exp(coef(vislogit))
+xkabledply(as.table(odds), title = "Exponential of coefficients")
+
+xkabledply(vislogit, title = paste("Logistic Regression :", format(formula(vislogit)) ))
+
+
+
+loadPkg("ResourceSelection")
+vishoslem <- hoslem.test(visdata$Severity, fitted(vislogit))
+vishoslem
+vishoslem$p.value
+
+loadPkg("pROC") 
+prob=predict(vislogit, type = "response" )
+visdata$prob=prob
+visroc <- roc(Severity~prob, data=visdata)
+auc(visroc) 
+plot(visroc)
+unloadPkg("pROC")
+
+
+loadPkg("pscl")
+visaic <- AIC(vislogit)
+visaic
+vispr2 <- pR2(vislogit)
+vispr2
+
+unloadPkg("pscl")
+unloadPkg("ResourceSelection")
+
+```
+
+
 
 # Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
 
@@ -178,6 +220,7 @@ table(observed = carter_test2[,1], predicted = predicted_table2)
 print(rf_model3)
 round(importance(rf_model3), 2)
 ```
+
 
 #What factors best predict the severity of an accident?
 
