@@ -1,0 +1,94 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(gridExtra)
+library(tidyverse)  
+library(corrplot)
+library(ezids)
+library(httr)
+library(randomForest)
+library(tree)
+```
+
+```{r}
+dataset=read.csv("C:\\Users\\Lenovo\\Desktop\\US_Accidents_Dec20_updated.csv")
+dataset <- na.omit(dataset)
+df=dataset
+```
+Preprocessing and cleaning
+```{r}
+df=subset(df,select=c(Severity, Amenity,Bump, Crossing,Give_Way, Junction, No_Exit, Railway, Roundabout,Station, Stop, Traffic_Calming, Traffic_Signal, Turning_Loop))
+str(df)
+df=as.data.frame(df)
+df$Amenity = factor(df$Amenity)
+df$Bump=factor(df$Bump)
+df$Crossing=factor(df$Crossing)
+df$Give_Way=factor(df$Give_Way)
+df$Junction=factor(df$Junction)
+df$No_Exit=factor(df$No_Exit)
+df$Railway=factor(df$Railway)
+df$Roundabout=factor(df$Roundabout)
+df$Station=factor(df$Station)
+df$Stop=factor(df$Stop)
+df$Traffic_Calming=factor(df$Traffic_Calming)
+df$Traffic_Signal=factor(df$Traffic_Signal)
+df$Turning_Loop=factor(df$Turning_Loop)
+df$Severity=as.factor(df$Severity)
+head(df)
+```
+Note: After reviewing the structure of the data set, we found out that "Turning_Loop" only had one level, meaning that the values of it were all "False".Therefore, we excluded it from our analysis for now. 
+
+Analysis - Logistic Regression
+
+```{r}
+loadPkg("MASS")
+dfLogit <- polr(Severity ~ Amenity+Bump+Crossing+Give_Way+Junction+No_Exit+Railway+Roundabout+Station+Stop+Traffic_Calming+Traffic_Signal, data = df, Hess = "TRUE")
+dfLogit
+summary(dfLogit)
+(ctable <- coef(summary(dfLogit)))
+p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+(ctable <- cbind(ctable, "p value" = p))
+xkabledply( confint.default(dfLogit), title = "CIs using standard errors" )
+expcoeff = exp(coef(dfLogit))
+xkabledply( as.table(expcoeff), title = "Exponential of coefficients in Logit Reg" )
+```
+All the coefficient were significant (small p-values)
+
+If the 95% CI does not cross 0, the parameter estimate can be statistically significant.Therefore, "Bump", "Crossing","No-Exit","Stop",'Traffic_Signal", "Roundabout", and "Station" were not statistically significant.
+
+Interpretation:
+
+When there was an amenity, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.2886 times that of the accidents which had no amenity, holding constant all other variables.
+
+When there was a Give-way, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.6544 times that of the accidents which had no crossing, holding constant all other variables.
+
+When there was a junction, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 2.0765 times that of the accidents which had no junction, holding constant all other variables.
+
+When there was railway, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 1.7134 times that of the accidents which had no traffic-signal, holding constant all other variables.
+
+When there was traffic-calming, the odds of the accident being more severe (i.e.,4, 3,2 versus 1) was 2.3826 times that of the accidents which had no traffic-signal, holding constant all other variables.
+
+Model Evaluation
+
+```{r}
+loadPkg("pscl") # use pR2( ) function to calculate McFadden statistics for model eval
+admitLogitpr2 = pR2(dfLogit)
+admitLogitpr2
+unloadPkg("pscl") 
+```
+According to the McFadden statistics, only 1.36% of the variations in y is explained by the explanatory variables in the model. This result urged us to look at other variables.
