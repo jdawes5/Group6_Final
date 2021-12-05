@@ -173,6 +173,14 @@ vispr2
 unloadPkg("pscl")
 unloadPkg("ResourceSelection")
 
+loadPkg("MASS")
+
+vislogit2 <- polr(Severity ~ vis+civ.light, data = visdata,Hess = "TRUE")
+vislogit2
+summary(vislogit2)
+#pval <- tidy(vislogit2, p.values=TRUE)
+#pval
+unloadPkg("MASS")
 ```
 
 
@@ -244,13 +252,13 @@ rf_model <- randomForest(Severity ~ .
 varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
 #wind direction, humidity, temperature appear in both plots
 ```
-Junran Cao - Analysis - Severity of the accident and road conditions
-```{r}
-df=dataset
-```
+
+# Is there any relationship between the severity of an accident and the road conditions (traffic stops, railways, junctions, etc.)?
+
+
 Preprocessing and cleaning
 ```{r}
-df=subset(df,select=c(Severity, Amenity,Bump, Crossing,Give_Way, Junction, No_Exit, Railway, Roundabout,Station, Stop, Traffic_Calming, Traffic_Signal, Turning_Loop))
+df=subset(dataset,select=c(Severity, Amenity,Bump, Crossing,Give_Way, Junction, No_Exit, Railway, Roundabout,Station, Stop, Traffic_Calming, Traffic_Signal, Turning_Loop))
 str(df)
 df=as.data.frame(df)
 df$Amenity = factor(df$Amenity)
@@ -266,11 +274,6 @@ df$Stop=factor(df$Stop)
 df$Traffic_Calming=factor(df$Traffic_Calming)
 df$Traffic_Signal=factor(df$Traffic_Signal)
 df$Turning_Loop=factor(df$Turning_Loop)
-df<-na.omit(df)
-df$Severity[df$Severity == '1'] <- 'Not Severe'
-df$Severity[df$Severity == '2'] <- 'Kind of Severe'
-df$Severity[df$Severity == '3'] <- 'Severe'
-df$Severity[df$Severity == '4'] <- 'Very Severe'
 df$Severity=as.factor(df$Severity)
 head(df)
 ```
