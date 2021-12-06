@@ -58,7 +58,7 @@ The topic we have chosen to examine in this project is traffic accidents in the 
  
 ## Limitations of the dataset
 
-
+There are several limitations of the data set that will complicate our modeling and testing processes. 
 
 ## SMART Questions and Hypotheses
 
