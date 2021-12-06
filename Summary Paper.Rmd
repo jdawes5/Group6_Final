@@ -46,7 +46,7 @@ options(scientific=T, digits = 3)
 # Background
 ## Overview
 
-
+The topic we have chosen to examine in this project is traffic accidents in the United States. According to the National Highway and Transportation Security Agency, over 30,000 fatal car accidents occurred in 2019 alone. The United States is a nation that relies heavily on automobile traffic in order to transport people from point A to point B. Car accidents are an unfortunate reality of our modern transportation infrastructure. The severity of these accidents can range from minor fender-benders to deadly collisions. Our goal for this project is to study the makeup of these accidents to gain potential insights from the data available to us. 
 
 ## Prior Research
 
@@ -56,25 +56,25 @@ options(scientific=T, digits = 3)
  
  
  
-## Limitation of the dataset
+## Limitations of the dataset
 
 
 
 ## SMART Questions and Hypotheses
 
-1.
+1. Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
+
+From prior knowledge we can infer that poor weather conditions lead to more severe traffic accidents. Low temperatures and high wind speeds can cause poor conditions that make driving very difficult. 
+
+2. What factors best predict the severity of an accident?
+
+We are curious to see which factors present during an accident best predict the severity of the ensuing accident. We plan to utilize as many variables as possible in the data set to compare their potential relationships with the severity of an accident.
+
+3. Is there a relationship between civil twilight and accident occurrences? Is there any relationship between visibility and the severity of an accident?
 
 
 
-2. 
-
-
-
-3. 
-
-
-
-4. 
+4. Is there any relationship between the severity of an accident and the road conditions (traffic stops, railways, junctions, etc.)?
 
 
 
