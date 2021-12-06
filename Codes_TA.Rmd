@@ -83,9 +83,6 @@ ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Sev
 
 
 
-
-# Is there a relationship between Civil Twilight and Accident Occurences? Is there any relationship between visibility and the seeverity of an accident?
-
 ```{r}
 
 loadPkg("dplyr")
@@ -95,6 +92,7 @@ loadPkg("ggplot2")
 dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
 
 #Subsetting out blank values for the variable civ.light
+
 visdata <- subset(dataset, civ.light != "")
 
 #Converting civ.light to a factor variable
@@ -107,10 +105,10 @@ qqline(visdata$vis)
 #Bar plot to show day time vs night time accidents as well as the severity levels that make up each
 ggplot(visdata, aes(y=vis, x=civ.light, fill= Severity)) +
   geom_bar(stat='identity') +
-  labs(title="Total Accidents Based on Daylight",
-       x="Daylight Status",
+  labs(title="Total Accidents Based on Twilight",
+       x="Twilight Status",
        y="Number of Accidents",
-       fill="Daylight Status")
+       fill="Severity")
 
 #Histogram to show 
 ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwidth = 1)+labs(title = "Histogram for Accident Count Based on Visibility", x = "Vsibility (miles)", y = "Count")
@@ -118,6 +116,8 @@ ggplot(data = visdata, aes(vis)) + geom_histogram(mapping = aes(x = vis), binwid
 ```
 
 
+
+# Is there a relationship between civil twilight and accident occurences? Is there any relationship between visibility and the seeverity of an accident?
 
 ```{r}
 #use one way anova to test severity and visibility
@@ -153,6 +153,7 @@ vistable <- coef(summary(vislogit))
 
 coefs = exp(coef(vislogit))
 xkabledply( as.table(coefs), title = "Exponentials of Coefficients for Model" )
+#xkabledply(vislogit, title = paste("Logistic Regression :", format(formula(vislogit)) ))
 
 vispredict = predict(vislogit, visdata)
 table(visdata$Severity, vispredict)
@@ -168,8 +169,58 @@ vispr
 unloadPkg("pscl")
 unloadPkg("MASS")
 
+results <- coef(summary(vislogit))
+p <- pnorm(abs(results[, "t value"]),lower.tail = FALSE)* 2
+results <- cbind(results, "p-value" = round(p,3))
+results
+#model results in p-values that are less than .05 so the coefficients are statistically significant at the 95% significance level
+
 ```
 
+Interpreting Results:
+
+Every unit increase in miles of visibility decreases the log(odds-ratio) by a factor of `r format(coefs[1],digit=4)`. 
+
+The effect from the time being night (as per Civil Twilight) hurts the log(odds-ratio) by a factor of `r format(coefs[2],digit=4)`
+
+
+```{r}
+
+loadPkg("MASS")
+
+vislogit2 <- polr(Severity ~ vis+civ.light+Pressure.in., data = visdata, Hess = "TRUE")
+vislogit2
+summary(vislogit2)
+
+vistable2 <- coef(summary(vislogit2))
+
+coefs2 = exp(coef(vislogit2))
+xkabledply( as.table(coefs2), title = "Exponentials of Coefficients for Model" )
+
+vispredict2 = predict(vislogit2, visdata)
+table(visdata$Severity, vispredict2)
+
+
+loadPkg("pscl")
+visaic2 <- AIC(vislogit)
+visaic2
+vispr2 <- pR2(vislogit)
+vispr2
+
+
+unloadPkg("pscl")
+unloadPkg("MASS")
+
+results2 <- coef(summary(vislogit2))
+p <- pnorm(abs(results[, "t value"]),lower.tail = FALSE)* 2
+results <- cbind(results2, "p-value" = round(p,3))
+results2
+#model results in p-values that are less than .05 so the coefficients are statistically significant at the 95% significance level
+
+
+```
+
+Building a second model with `Pressure.in.` as an additional predictor has not done much to improve the other model. the McFadden test shows very minor improvement while AIC is worse off and the correlation matric shows no improvement.
 
 
 # Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
