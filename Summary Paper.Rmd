@@ -1,0 +1,100 @@
+---
+title: "DATS610 Final Project- Analyzing trends in U.S. Traffic Accident Data"
+author: "Junran Cao, Jordan Dawes, and Carter Rogers"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: true
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r init, include=F}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(gridExtra)
+library(tidyverse)  
+library(corrplot)
+library(ezids)
+library(httr)
+library(randomForest)
+library(tree)
+library(caret)
+library(broom)
+```
+
+
+```{r setup, include=FALSE}
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+# knitr::opts_chunk$set(include = F)
+# knitr::opts_chunk$set(echo = TRUE)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+# Background
+## Overview
+
+
+
+## Prior Research
+
+
+
+## Dataset Description
+ 
+ 
+ 
+## Limitation of the dataset
+
+
+
+## SMART Questions and Hypotheses
+
+1.
+
+
+
+2. 
+
+
+
+3. 
+
+
+
+4. 
+
+
+
+# Analysis 
+## Exploratory Data Analysis (EDA)
+
+
+
+## Tests and Modeling
+
+
+
+## Findings
+
+
+
+# Conclusion
+
+
+
+# References
+
+
