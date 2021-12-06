@@ -41,6 +41,27 @@ options(scientific=T, digits = 3)
 # options(scipen=9, digits = 3) 
 # ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
 # use scipen=999 to prevent scientific notation at all times
+
+dataset <- read.csv("~/Downloads/US_Accidents_Dec20_updated.csv")
+dataset <- na.omit(dataset) #335,552 observations remaining
+
+#encoding correct datatypes
+dataset$ID <- as.character(dataset$ID)
+dataset$Severity <- as.factor(dataset$Severity)
+dataset$Start_Time <- as.character(dataset$Start_Time)
+dataset$End_Time <- as.character(dataset$End_Time)
+dataset$Description <- as.character(dataset$Description)
+dataset$Street <- as.character(dataset$Street)
+dataset$City <- as.character(dataset$City)
+dataset$County <- as.character(dataset$County)
+dataset$State <- as.character(dataset$State)
+dataset$Zipcode <- as.numeric(dataset$Zipcode)
+dataset$Airport_Code <- as.character(dataset$Airport_Code)
+dataset$Weather_Timestamp <- as.character(dataset$Weather_Timestamp)
+dataset$Weather_Condition <- as.character(dataset$Weather_Condition)
+
+#remove unnecessary columns
+dataset <- subset(dataset, select = -c(Number, Street, Side, Airport_Code, Weather_Timestamp, Start_Lat, Start_Lng, End_Lat, End_Lng))
 ```
 
 # Background
@@ -54,11 +75,17 @@ The topic we have chosen to examine in this project is traffic accidents in the 
 
 ## Dataset Description
  
- 
+The original data set from Kaggle contains over 1.5 million observations; unfortunately, the majority of these observations contain missing values that we will remove from our analysis. After removing rows with missing values, removing unnecessary columns, and encoding variables as the proper type, we obtain a data set of 335,552 observations structured as follows:
+
+```{r}
+str(dataset)
+```
+
+Some of these variables might be useful, but fall outside the scope of this project. For example, the 'Description' column contains intriguing information but requires some language processing implementation to parse the relevant information from this column. We also have a bevy of geographic information from where the accidents occurred available to us, but including these features into our analysis would greatly complicate the modeling and testing processes. The key response variables we can use in our analysis are 'Severity' and 'Distance.mi.' which indicate the severity of a given accident on a scale of 1-4, and the distance that traffic was backed up as a result of the accident.
  
 ## Limitations of the dataset
 
-There are several limitations of the data set that will complicate our modeling and testing processes. 
+There are several limitations of the data set that will complicate our analysis of the data. One nice feature of the data set is that we have access to both a categorical and numeric response variable, opening up a wide range of modeling techniques at our disposal. Unfortunately, both of these variables are imperfect to use as response variables. The severity of an accident is somewhat subjective; the description of the data set on Kaggle does not include the criteria for the classification of the severity of an accident other than the fact that severity is ascending from least severe (1) to most severe (4). For the purposes of this project, we will assume that accidents with lower severity are minor crashes with minimal damages to the vehicles and little to no injuries to the passengers, while more severe accidents are defined by greater damages to the vehicle and/or more severe injuries to the passengers. The distance that traffic is impacted as a result of an accident is difficult to record, so we will need to inspect the data to see if any outliers are present.
 
 ## SMART Questions and Hypotheses
 
