@@ -269,7 +269,7 @@ round(importance(rf_model3), 2)
 ```
 
 
-#What factors best predict the severity of an accident?
+# What factors best predict the severity of an accident?
 
 ```{r}
 #remove all cols except numeric, factor, and binary. Also excluding Distance since this is not a "predictive" metric but rather a rough measurement of severity
