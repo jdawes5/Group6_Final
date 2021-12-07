@@ -178,7 +178,29 @@ We can implement stratified sampling in our random forest modeling by specifying
 
 ### What factors best predict the severity of an accident?
 
+In order to determine which factors best predict the severity of an accident, we can further utilize the Random Forest method of classification. This time, we will build the model using as many of the features of the data set as possible. As mentioned earlier, Random Forest models can handle the feature selection process through generating decorrelated trees that are built off of a small subset of the variables present in the data.
 
+```{r}
+#remove all cols except numeric, factor, and binary. Also excluding Distance since this is not a "predictive" metric but rather a rough measurement of severity
+rf_data = subset(dataset, select = -c(ID, Start_Time, End_Time, Distance.mi., Description, City, County, State, Zipcode, Country, Weather_Condition))
+
+#split train-test
+rf_trainIndex <- createDataPartition(rf_data$Severity, p = .7, list = FALSE, times = 1)
+rf_carter_train <- rf_data[rf_trainIndex,]
+rf_carter_test <- rf_data[-rf_trainIndex,]
+
+rf_model <- randomForest(Severity ~ .
+                    , data = rf_carter_train
+                    , mtry = 5
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob")
+
+varImpPlot(rf_model, n.var = 5, main = "Variable Importance Plot for Random Forest Model (Severity)")
+#wind direction, humidity, temperature appear in both plots
+```
+
+Using the varImpPlot() function from the 'randomForest' library, we can examine the variables that most impacted the accuracy of the model by Mean Decrease in Accuracy and Gini. The most important predictor that had the greatest impact on the model's accuracy when omitted was Atmospheric Pressure. Humidity and Wind Direction also appear in both the Mean Decrease Accuracy and Gini plots. These are the features that most impacted the Random Forest model's accuracy when omitted from the set of variables used for the decisions made by the nodes of the trees. 
 
 ### Is there a relationship between civil twilight and accident occurences? Is there any relationship between visibility and the seeverity of an accident?
 
