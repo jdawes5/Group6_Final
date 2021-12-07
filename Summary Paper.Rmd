@@ -126,6 +126,56 @@ We are curious to see how severity is impacted by conditions present at the time
 
 We will build a Random Forest classification model to classify the severity of an accident using the following predictor variables: Temperature, Wind Speed (mph), Wind Chill (F), Humidity, Pressure (in), Visibility, and Precipitation (in). Random Forests is a useful algorithm to base our modeling process on because it handles many predictor variables better than other classifiers. Because the Random Forest algorithm only uses a small subset of features to build each decision tree off of, the model performs well despite the inclusion of collinear features or features that dominate the decision-making process at each node. Random Forest is an appealing model to use because we are using several predictor variables that are correlated with each other, so we won't have to undergo a lengthy factor selection process here.
 
+```{r}
+set.seed(123)
+
+newdata2 <- subset(dataset, select = c(Severity, Temperature.F., Wind_Speed.mph., Wind_Chill.F., Humidity..., Pressure.in., vis, Precipitation.in.))
+
+#scale vars
+scaleddata2 <- as.data.frame(scale(newdata2[2:8], center = TRUE, scale = TRUE))
+scaleddata2 <- cbind(newdata2[,1], scaleddata2)
+names(scaleddata2)[1] <- 'Severity'
+
+trainIndex2 <- createDataPartition(scaleddata2$Severity, p = .7, list = FALSE, times = 1)
+carter_train2 <- scaleddata2[trainIndex2,]
+carter_test2 <- scaleddata2[-trainIndex2,]
+
+rf_model2 <- randomForest(Severity ~ .
+                    , data = carter_train2
+                    , mtry = 3
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob")
+```
+
+After normalizing the data, we can build a Random Forest model to classify accident severity based on the predictor variables that capture the weather conditions present at the time of the accident.
+
+```{r}
+predicted_table <- predict(rf_model2, carter_test2[,-1])
+table(observed = carter_test2[,1], predicted = predicted_table)
+print(rf_model2)
+round(importance(rf_model2), 2)
+```
+
+The results of this model are generally poor due to the class imbalance of the data. Because the overwhelming majority of observations are of severity '2', the model is rewarded for naively predicting severity '2' with little regard for precision. The model resulted in a class error of $57.68\%$ for severity '1', $70.49\%$ for severity '3', and $67.23\%$ for severity '4'. Our goal now is to reduce the class error by dealing with the class imbalance of the data. One technique we can use is stratified sampling; by forcing the model to train itself using equal weights across the 4 classes of severity, we can train the model to better identify the minority classes.
+
+```{r}
+rf_model3 <- randomForest(Severity ~ .
+                    , data = carter_train2
+                    , mtry = 3
+                    , ntree = 20
+                    , importance = TRUE
+                    , type = "prob"
+                    , sampsize = c(1000, 1000, 1000, 1000))
+
+predicted_table2 <- predict(rf_model3, carter_test2[,-1])
+table(observed = carter_test2[,1], predicted = predicted_table2)
+print(rf_model3)
+round(importance(rf_model3), 2)
+```
+
+We can implement stratified sampling in our random forest modeling by specifying the parameter 'sampsize' when calling the randomForest() function. As expected, we do observe a drastic reduction in class error for severity '1', '3', and '4'. The model resulted in a class error of $38.4\%$ for severity '1', $49\%$ for severity '3', and $61.4\%$ for severity '4'. Note that the class error for severity '2' increases for the second model, but this is an expected tradeoff of de-emphasizing severity '2' in the training of the model.
+
 ### What factors best predict the severity of an accident?
 
 
