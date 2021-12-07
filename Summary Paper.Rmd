@@ -108,7 +108,17 @@ We are curious to see which factors present during an accident best predict the 
 # Analysis 
 ## Exploratory Data Analysis (EDA)
 
+```{r}
+table(dataset$Severity)
+```
 
+In order to use the 'Severity' column as a response variable in our modeling, we first need to examine the distribution of severity across the four levels. As seen in the table above, the vast majority of accidents in the data are recorded as severity '2'. We can assume that accidents of severity '2' are more severe than a negligible fender-bender, but not severe enough to cause major damage or severe injury to the passengers involved. This makes sense intuitively because accidents with severity '1' might not be noteworthy enough to be recorded by law enforcement agencies, while crashes with greater severity are far less common. We will need to keep this imbalanced distribution of 'Severity' in mind during the modeling process.
+
+```{r}
+ggplot(data = dataset, aes(x = Temperature.F., y = Wind_Speed.mph., colour = Severity)) + geom_point() + scale_y_continuous(limits = c(0, 50))
+```
+
+We are curious to see how severity is impacted by conditions present at the time of the accident. One of our goals for this project is to be able to classify the severity of an accident using temperature and wind speed as predictors. We can't see any definitive groups of observations by level of severity, but we will attempt to classify these accidents with minimal error.  
 
 ## Tests and Modeling
 
