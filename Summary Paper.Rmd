@@ -122,6 +122,18 @@ We are curious to see how severity is impacted by conditions present at the time
 
 ## Tests and Modeling
 
+### Can we classify the severity of a given accident based on temperature, wind speed, or other weather conditions present during the accident?
+
+
+### What factors best predict the severity of an accident?
+
+
+### Is there a relationship between civil twilight and accident occurences? Is there any relationship between visibility and the seeverity of an accident?
+
+
+
+### Is there any relationship between the severity of an accident and the road conditions (traffic stops, railways, junctions, etc.)?
+
 
 
 ## Findings
