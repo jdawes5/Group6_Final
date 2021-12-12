@@ -62,6 +62,9 @@ dataset$Weather_Condition <- as.character(dataset$Weather_Condition)
 
 #remove unnecessary columns
 dataset <- subset(dataset, select = -c(Number, Street, Side, Airport_Code, Weather_Timestamp, Start_Lat, Start_Lng, End_Lat, End_Lng))
+
+#Renaming relevant columns
+dataset <- rename(dataset, c("civ.light" = "Civil_Twilight"),c("vis" = "Visibility.mi."))
 ```
 
 # Background
